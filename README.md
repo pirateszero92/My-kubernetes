@@ -95,9 +95,6 @@
     sudo systemctl restart kubelet.service
     sudo systemctl enable kubelet.service
 
-# Step 7: For worker nodes to join the cluster
-    sudo kubeadm join
-
 # Initialize the Kubernetes cluster on the master node
 
 # Step 1: Initialize master node
@@ -114,8 +111,10 @@
     sed -i 's/cidr: 192\.168\.0\.0\/16/cidr: 10.1.0.0\/16/g' custom-resources.yaml
 
     kubectl create -f custom-resources.yaml
+    
+# Step 3: For worker nodes to join the cluster
+    sudo kubeadm join
 
-
-# Step 3: Verify the cluster and test
+# Step 4: Verify the cluster and test
     kubectl get node
     kubectl get po -A
