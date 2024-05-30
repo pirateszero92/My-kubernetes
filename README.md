@@ -165,7 +165,7 @@ Create metallb-loadbalancer.yaml
 	  namespace: metallb-system
 	spec:
 	  addresses:
-	  - 203.0.113.10-203.0.113.15
+	  - 192.168.210.1-192.168.210.150
 	  autoAssign: true
 	---
 	apiVersion: metallb.io/v1beta1
