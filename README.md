@@ -18,6 +18,7 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
 # Step 0: Static IP 
     sudo nano /ect/netplan/01-network-manager-all.yaml 
 
+##Add to line
     #This is the network config written by 'subiquity'
     network: 
       ethernets: 
@@ -57,6 +58,8 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
     overlay
     br_netfilter
     EOF
+
+#apply
 
     sudo modprobe overlay
     sudo modprobe br_netfilter
