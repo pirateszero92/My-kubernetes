@@ -1,3 +1,34 @@
+# Install and setup nfs server
+
+####Setup an NFS server#######
+
+Caution: This section will show you how to configure a simple NFS server on Ubuntu for the purpose of this tutorial. This is not a production-grade NFS setup.
+
+If you don’t have a suitable NFS server already, you can simply create one on a local machine with the following commands on Ubuntu:
+
+	sudo apt-get install nfs-kernel-server
+
+Create a directory to be used for NFS:
+
+	sudo mkdir -p /share/nfs
+	sudo chown nobody:nogroup /share/nfs
+	sudo chown -R 999:999 /share/nfs #user for mysql, mariadb or databas
+ 
+####sudo chmod 0777 /share/nfs#### not work for mysql, mariada,datbase
+
+Edit the /etc/exports file. Make sure that the IP addresses of all your MicroK8s nodes are able to mount this share. For example, to allow all IP addresses in the 192.168.210.0/24 subnet:
+
+	sudo mv /etc/exports /etc/exports.bak
+	echo '/srv/nfs 192.168.210.0/24(rw,sync,no_subtree_check)' | sudo tee /etc/exports
+ 
+Finally, restart the NFS server:
+
+	sudo systemctl restart nfs-kernel-server
+
+####Install the CSI driver for NFS########
+
+ref: https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.7.0.md
+
 # Install NFS CSI driver v4.7.0 version on a kubernetes cluster
 
 If you have already installed Helm, you can also use it to install this driver. Please check Installation with Helm.
