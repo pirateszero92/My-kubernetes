@@ -145,12 +145,12 @@ Create a directory to be used for NFS:
  
 ####sudo chmod 0777 /share/nfs#### not work for mysql, mariada,datbase
 
-Edit the /etc/exports file. Make sure that the IP addresses of all your MicroK8s nodes are able to mount this share. For example, to allow all IP addresses in the 10.0.0.0/24 subnet:
+Edit the /etc/exports file. Make sure that the IP addresses of all your MicroK8s nodes are able to mount this share. For example, to allow all IP addresses in the 192.168.210.0/24 subnet:
 
 	sudo mv /etc/exports /etc/exports.bak
 	echo '/srv/nfs 192.168.210.0/24(rw,sync,no_subtree_check)' | sudo tee /etc/exports
  
-#Finally, restart the NFS server:
+Finally, restart the NFS server:
 
 	sudo systemctl restart nfs-kernel-server
 
