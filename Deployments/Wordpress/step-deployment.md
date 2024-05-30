@@ -7,6 +7,7 @@
 	nano secret.yaml
 
 #Add to file
+
 	apiVersion: v1
 	kind: Secret
 	metadata:
