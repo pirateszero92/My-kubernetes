@@ -123,7 +123,7 @@
 
 # 1. install-helm
 
-# Install Helm from Script
+Install Helm from Script
 
 Helm now has an installer script that will automatically grab the latest version of Helm and install it locally.
 
