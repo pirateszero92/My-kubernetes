@@ -6,8 +6,8 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
     - K8s-Master-node 
     - K8s-Worker-node
     - NFS-server for Provisioner Persisten Volume
-    3 IP for server and 1-150 for External IP (Loadbalancer) 
-        Example: 
+        3 IP for server and 1-150 for External IP (Loadbalancer) 
+    Example: 
         192.168.210.250 k8s-master 
         192.168.210.251 k8s-n1 
         192.168.210.252 k8s-nfs 
@@ -16,8 +16,7 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
 # 2. Install Kubernetes step by step
 
 # Step 0: Static IP 
-
-sudo nano /ect/netplan/01-network-manager-all.yaml 
+    sudo nano /ect/netplan/01-network-manager-all.yaml 
 
 #This is the network config written by 'subiquity'
 network: 
