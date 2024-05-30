@@ -2,7 +2,7 @@
 
 Install Kubernetes Cluster on Unbuntu Server Step by Step.
 
-1. Prepare 3 Server and Network IP.
+#1. Prepare 3 Server and Network IP.
     - K8s-Master-node 
     - K8s-Worker-node
     - NFS-server for Provisioner Persisten Volume
@@ -13,9 +13,9 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
         192.168.210.252 k8s-nfs 
         IP range : 192.168.210.1-192.168.210.150
 
-2. Install Kubernetes step by step
+#2. Install Kubernetes step by step
 
-Step 0: Static IP 
+#Step 0: Static IP 
 
 sudo nano /ect/netplan/01-network-manager-all.yaml 
 
@@ -41,18 +41,18 @@ network:
 #      dhcp4: true
 #  version: 2
 
-Step 1: Disable swap
+#Step 1: Disable swap
 
 sudo swapoff -a
 sudo sed -i '/swap/s/^/#/' /etc/fstab
 sudo swapon --show
 
-Step 2: Setup hostnames
+#Step 2: Setup hostnames
 
 sudo hostnamectl set-hostname "k8s-master"
 exec bash
 
-Step 3: Update the /etc/hosts File for Hostname Resolution
+#Step 3: Update the /etc/hosts File for Hostname Resolution
 
 127.0.1.1 k8s-master
 
@@ -61,7 +61,7 @@ Step 3: Update the /etc/hosts File for Hostname Resolution
 192.168.210.252 k8s-nfs
 
 
-Step 4: Set up the IPV4 bridge on all nodes
+#Step 4: Set up the IPV4 bridge on all nodes
 To configure the IPV4 bridge on all nodes, execute the following commands on each node.
 
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
