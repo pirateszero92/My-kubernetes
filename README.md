@@ -98,7 +98,7 @@
 # Step 7: For worker nodes to join the cluster
     sudo kubeadm join
 
-## Initialize the Kubernetes cluster on the master node
+# Initialize the Kubernetes cluster on the master node
 
 # Step 1: Initialize master node
     sudo kubeadm config images pull
