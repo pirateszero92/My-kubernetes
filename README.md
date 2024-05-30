@@ -133,4 +133,5 @@ sudo kubeadm join
 
 # Step 10: Verify the cluster and test
 kubectl get node
+
 kubectl get po -A
