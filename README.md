@@ -123,8 +123,11 @@ mkdir -p $HOME/.kube
 # Step 8: Configure kubectl and Calico
 
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
+
 curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/custom-resources.yaml -O
+
 sed -i 's/cidr: 192\.168\.0\.0\/16/cidr: 10.1.0.0\/16/g' custom-resources.yaml
+
 kubectl create -f custom-resources.yaml
 
 
