@@ -4,4 +4,7 @@
 	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/baremetal/deploy.yaml
 
 #Checking ingress controller version
-#Run /nginx-ingress-controller --version within the pod, for instance with kubectl exec:
+Run /nginx-ingress-controller --version within the pod, for instance with kubectl exec:
+
+
+# ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
