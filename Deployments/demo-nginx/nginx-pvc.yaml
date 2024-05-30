@@ -3,7 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: nginx-data
 spec:
-  storageClassName: k8s-nfs
+  storageClassName: nfs-storage
   accessModes: [ReadWriteMany]
   resources:
     requests:
