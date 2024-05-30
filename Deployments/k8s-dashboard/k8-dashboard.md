@@ -32,6 +32,8 @@ Create file : user-admin.yaml
         kubernetes.io/service-account.name: "admin"   
     type: kubernetes.io/service-account-token
 
+Apply:
+
     kubectl apply -f user-admin.yaml
 
 ##and run
