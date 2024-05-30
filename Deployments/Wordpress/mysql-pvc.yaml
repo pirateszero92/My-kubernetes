@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+  namespace: wordpress
+  labels:
+    app: wordpress
+spec:
+  storageClassName: k8s-nfs
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
