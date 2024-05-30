@@ -121,9 +121,11 @@
 
 # Next Step
 
-#1. install-helm
-#2. install-ingress
-#3. install-metallb
+1. install-helm
+   
+2. install-ingress
+
+3. install-metallb
 
 # Install and setup nfs server
 
