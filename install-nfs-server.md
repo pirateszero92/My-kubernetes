@@ -41,5 +41,7 @@ Option 2. local uninstall
   git clone https://github.com/kubernetes-csi/csi-driver-nfs.git
  
   cd csi-driver-nfs
+  
   git checkout v4.7.0
+  
    ./deploy/uninstall-driver.sh v4.7.0 local
