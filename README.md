@@ -72,7 +72,7 @@ EOF
 sudo modprobe overlay
 sudo modprobe br_netfilter
 
-# sysctl params required by setup, params persist across reboots
+#sysctl params required by setup, params persist across reboots
 
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-iptables  = 1
@@ -80,7 +80,7 @@ net.bridge.bridge-nf-call-ip6tables = 1
 net.ipv4.ip_forward                 = 1
 EOF
 
-# Apply sysctl params without reboot
+#Apply sysctl params without reboot
 sudo sysctl --system
 
 # Step 5: Install kubelet, kubeadm, and kubectl on each node
@@ -128,4 +128,9 @@ sed -i 's/cidr: 192\.168\.0\.0\/16/cidr: 10.1.0.0\/16/g' custom-resources.yaml
 kubectl create -f custom-resources.yaml
 
 
-Step 9: Add worker nodes to the cluster
+# Step 9: Add worker nodes to the cluster
+sudo kubeadm join
+
+# Step 10: Verify the cluster and test
+kubectl get node
+kubectl get po -A
