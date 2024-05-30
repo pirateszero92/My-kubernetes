@@ -19,6 +19,7 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
     sudo nano /ect/netplan/01-network-manager-all.yaml 
 
 ##Add to line
+
     #This is the network config written by 'subiquity'
     network: 
       ethernets: 
