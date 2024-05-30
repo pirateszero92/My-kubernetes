@@ -7,4 +7,4 @@
 Run /nginx-ingress-controller --version within the pod, for instance with kubectl exec:
 
 
-# ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
+#ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
