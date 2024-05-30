@@ -95,7 +95,12 @@
     sudo systemctl restart kubelet.service
     sudo systemctl enable kubelet.service
 
-# Step 7: Initialize the Kubernetes cluster on the master node
+# Step 7: For worker nodes to join the cluster
+    sudo kubeadm join
+
+## Initialize the Kubernetes cluster on the master node
+
+# Step 1: Initialize master node
     sudo kubeadm config images pull
     sudo kubeadm init --pod-network-cidr=10.1.0.0/16
 
@@ -103,7 +108,7 @@
       sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
       sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-# Step 8: Configure kubectl and Calico
+# Step 2: Configure kubectl and Calico
     kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
     curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/custom-resources.yaml -O
     sed -i 's/cidr: 192\.168\.0\.0\/16/cidr: 10.1.0.0\/16/g' custom-resources.yaml
@@ -111,9 +116,6 @@
     kubectl create -f custom-resources.yaml
 
 
-# Step 9: Add worker nodes to the cluster
-    sudo kubeadm join
-
-# Step 10: Verify the cluster and test
+# Step 3: Verify the cluster and test
     kubectl get node
     kubectl get po -A
