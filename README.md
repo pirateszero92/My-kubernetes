@@ -18,38 +18,35 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
 # Step 0: Static IP 
     sudo nano /ect/netplan/01-network-manager-all.yaml 
 
-#This is the network config written by 'subiquity'
-network: 
-  ethernets: 
-    eth0: 
-      addresses: 
-      - 192.168.210.250/24 
-      nameservers: 
-        addresses: 
-        - 8.8.8.8 
-        search: 
-        - local 
-      routes: 
-      - to: default 
-        via: 192.168.210.2 
-  version: 2 
-
-#network:
-  #ethernets:
-    #ens32:
-      #dhcp4: true
-  #version: 2
+    #This is the network config written by 'subiquity'
+    network: 
+      ethernets: 
+        eth0: 
+          addresses: 
+          - 192.168.210.250/24 
+          nameservers: 
+            addresses: 
+            - 8.8.8.8 
+            search: 
+            - local 
+          routes: 
+          - to: default 
+            via: 192.168.210.2 
+      version: 2 
+    #network:
+      #ethernets:
+        #ens32:
+          #dhcp4: true
+      #version: 2
 
 # Step 1: Disable swap
-
-sudo swapoff -a
-sudo sed -i '/swap/s/^/#/' /etc/fstab
-sudo swapon --show
+    sudo swapoff -a
+    sudo sed -i '/swap/s/^/#/' /etc/fstab
+    sudo swapon --show
 
 # Step 2: Setup hostnames
-
-sudo hostnamectl set-hostname "k8s-master"
-exec bash
+    sudo hostnamectl set-hostname "k8s-master"
+    exec bash
 
 # Step 3: Update the /etc/hosts File for Hostname Resolution
 
