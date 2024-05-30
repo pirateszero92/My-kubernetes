@@ -34,7 +34,8 @@ Create file : user-admin.yaml
 
     kubectl apply -f user-admin.yaml
 
-##and run 
+##and run
+
     kubectl get secret admin -n kubernetes-dashboard -o jsonpath={".data.token"} | base64 -d
 
 Example:
