@@ -14,6 +14,7 @@ type: ClusterIP ---> type: LoadBalancer  wq!(save and exit)
     kubectl get all -n kubernetes-dashboard
 
 ##Create token:
+
     kubectl create serviceaccount admin -n kubernetes-dashboard
     kubectl create clusterrolebinding admin --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:admin
     kubectl -n kubernetes-dashboard create token admin
