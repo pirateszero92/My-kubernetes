@@ -139,9 +139,57 @@ You can fetch that script, and then execute it locally. It's well documented so 
    
 # 2. install-ingress
 
+#Bare metal clusters
+
+This section is applicable to Kubernetes clusters deployed on bare metal servers, as well as "raw" VMs where Kubernetes was installed manually, using generic Linux distros (like CentOS, Ubuntu...)
+
+	kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/baremetal/deploy.yaml
+
+#Checking ingress controller version Run /nginx-ingress-controller --version within the pod, for instance with kubectl exec:
 
 
-4. install-metallb
+#ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
+
+# 3. install-metallb
+
+MetalLB can be deployed either with a simple Kubernetes manifest or with Helm. The rest of this example assumes MetalLB was deployed following the Installation instructions, and that the Ingress-Nginx Controller was installed using the steps described in the quickstart section of the installation guide.
+
+MetalLB requires a pool of IP addresses in order to be able to take ownership of the ingress-nginx Service. This pool can be defined through IPAddressPool objects in the same namespace as the MetalLB controller. This pool of IPs must be dedicated to MetalLB's use, you can't reuse the Kubernetes node IPs or IPs handed out by a DHCP server.
+
+Create metallb-loadbalancer.yaml
+
+	apiVersion: metallb.io/v1beta1
+	kind: IPAddressPool
+	metadata:
+	  name: default
+	  namespace: metallb-system
+	spec:
+	  addresses:
+	  - 203.0.113.10-203.0.113.15
+	  autoAssign: true
+	---
+	apiVersion: metallb.io/v1beta1
+	kind: L2Advertisement
+	metadata:
+	  name: default
+	  namespace: metallb-system
+	spec:
+	  ipAddressPools:
+	  - default
+   
+Apply config
+
+	kubectl apply -f  metallb-loadbalancer.yaml
+
+Check service
+
+	kubectl -n ingress-nginx get svc
+
+ Output :
+
+ 	NAME                   TYPE          CLUSTER-IP     EXTERNAL-IP  PORT(S)
+	default-http-backend   ClusterIP     10.0.64.249    <none>       80/TCP
+	ingress-nginx          LoadBalancer  10.0.220.217   203.0.113.10  80:30100/TCP,443:30101/TCP
 
 # Install and setup nfs server
 
