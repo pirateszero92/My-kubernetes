@@ -286,7 +286,19 @@ Create folder nfs-storage && cd nfs-storage
 
 Add Line:
 
-
+	apiVersion: storage.k8s.io/v1
+	kind: StorageClass
+	metadata:
+	  name: nfs-storage
+	provisioner: nfs.csi.k8s.io
+	parameters:
+	  server: 192.168.210.252
+	  share: /share/nfs
+	reclaimPolicy: Delete
+	volumeBindingMode: Immediate
+	mountOptions:
+	  - hard
+	  - nfsvers=4.1
 
 Apply:
 
