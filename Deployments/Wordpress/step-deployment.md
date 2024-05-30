@@ -1,7 +1,7 @@
 # Deployment Wordpress and Mysql on Kubernetes.
 
 # 1. Create Namespace
-	kubectl create na wordpress
+	kubectl create ns wordpress
 
 # 2. Create secret.yaml
 	nano secret.yaml
@@ -14,6 +14,7 @@
 	stringData:
   	  password: MyP@sswo0rd!
 #Apply secret
+
 	kubectl apply -f secret.yaml
 
 
