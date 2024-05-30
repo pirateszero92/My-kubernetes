@@ -12,7 +12,7 @@ Create a directory to be used for NFS:
 
 	sudo mkdir -p /share/nfs
 	sudo chown nobody:nogroup /share/nfs
-	sudo chown -R 999:999 /share/nfs #user for mysql, mariadb or databas
+	sudo chown -R 999:999 /share/nfs #use for mysql, mariadb or databas
  
 ####sudo chmod 0777 /share/nfs#### not work for mysql, mariada,datbase
 
