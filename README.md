@@ -267,8 +267,8 @@ Option 2. local uninstall
  
 	cd csi-driver-nfs
 
- ref: https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.7.0.md
- 
 	git checkout v4.7.0
  
 	./deploy/uninstall-driver.sh v4.7.0 local
+
+ref: https://github.com/kubernetes-csi/csi-driver-nfs/blob/master/docs/install-csi-driver-v4.7.0.md
