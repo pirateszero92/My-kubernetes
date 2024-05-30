@@ -185,7 +185,7 @@ Check service
 
 	kubectl -n ingress-nginx get svc
 
- Output :
+ Example Output :
 
  	NAME                   TYPE          CLUSTER-IP     EXTERNAL-IP    PORT(S)
 	default-http-backend   ClusterIP     10.0.64.249    <none>         80/TCP
