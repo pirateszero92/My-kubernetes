@@ -2,7 +2,7 @@
 
 Install Kubernetes Cluster on Unbuntu Server Step by Step.
 
-#1. Prepare 3 Server and Network IP.
+# 1. Prepare 3 Server and Network IP.
     - K8s-Master-node 
     - K8s-Worker-node
     - NFS-server for Provisioner Persisten Volume
@@ -13,13 +13,13 @@ Install Kubernetes Cluster on Unbuntu Server Step by Step.
         192.168.210.252 k8s-nfs 
         IP range : 192.168.210.1-192.168.210.150
 
-#2. Install Kubernetes step by step
+# 2. Install Kubernetes step by step
 
-#Step 0: Static IP 
+# Step 0: Static IP 
 
 sudo nano /ect/netplan/01-network-manager-all.yaml 
 
-# This is the network config written by 'subiquity'
+#This is the network config written by 'subiquity'
 network: 
   ethernets: 
     eth0: 
@@ -36,23 +36,23 @@ network:
   version: 2 
 
 #network:
-#  ethernets:
-#    ens32:
-#      dhcp4: true
-#  version: 2
+  #ethernets:
+    #ens32:
+      #dhcp4: true
+  #version: 2
 
-#Step 1: Disable swap
+# Step 1: Disable swap
 
 sudo swapoff -a
 sudo sed -i '/swap/s/^/#/' /etc/fstab
 sudo swapon --show
 
-#Step 2: Setup hostnames
+# Step 2: Setup hostnames
 
 sudo hostnamectl set-hostname "k8s-master"
 exec bash
 
-#Step 3: Update the /etc/hosts File for Hostname Resolution
+# Step 3: Update the /etc/hosts File for Hostname Resolution
 
 127.0.1.1 k8s-master
 
@@ -61,8 +61,8 @@ exec bash
 192.168.210.252 k8s-nfs
 
 
-#Step 4: Set up the IPV4 bridge on all nodes
-To configure the IPV4 bridge on all nodes, execute the following commands on each node.
+# Step 4: Set up the IPV4 bridge on all nodes
+#To configure the IPV4 bridge on all nodes, execute the following commands on each node.
 
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
@@ -73,6 +73,7 @@ sudo modprobe overlay
 sudo modprobe br_netfilter
 
 # sysctl params required by setup, params persist across reboots
+
 cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
 net.bridge.bridge-nf-call-iptables  = 1
 net.bridge.bridge-nf-call-ip6tables = 1
@@ -82,7 +83,7 @@ EOF
 # Apply sysctl params without reboot
 sudo sysctl --system
 
-Step 5: Install kubelet, kubeadm, and kubectl on each node
+# Step 5: Install kubelet, kubeadm, and kubectl on each node
 
 sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl
@@ -100,7 +101,7 @@ sudo apt-get update
 sudo apt install kubeadm kubelet kubectl
 sudo apt-mark hold kubelet kubeadm kubectl
 
-Step 6: Install Docker
+# Step 6: Install Docker
 
 sudo apt install docker.io
 sudo mkdir /etc/containerd
@@ -110,7 +111,7 @@ sudo systemctl restart containerd.service
 sudo systemctl restart kubelet.service
 sudo systemctl enable kubelet.service
 
-Step 7: Initialize the Kubernetes cluster on the master node
+# Step 7: Initialize the Kubernetes cluster on the master node
 
 sudo kubeadm config images pull
 sudo kubeadm init --pod-network-cidr=10.1.0.0/16
@@ -119,7 +120,7 @@ mkdir -p $HOME/.kube
   sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
   sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
-Step 8: Configure kubectl and Calico
+# Step 8: Configure kubectl and Calico
 
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/tigera-operator.yaml
 curl https://raw.githubusercontent.com/projectcalico/calico/v3.27.2/manifests/custom-resources.yaml -O
