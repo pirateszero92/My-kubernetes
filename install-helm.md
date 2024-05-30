@@ -9,3 +9,5 @@ You can fetch that script, and then execute it locally. It's well documented so 
 	chmod 700 get_helm.sh
 
 	./get_helm.sh
+
+#ref: https://helm.sh/docs/intro/install/
