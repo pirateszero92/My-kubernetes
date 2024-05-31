@@ -1,13 +1,13 @@
 Create Directory
 
-  mkdir docker-registry && cd docker-registry
-  mkdir cert
+    mkdir docker-registry && cd docker-registry
+    mkdir cert
 
 put crt and key file in the cert folder.
 
 Create docker-compose file
 
-  nano docker-compose.yaml
+    nano docker-compose.yaml
 
 Add to line :
 
