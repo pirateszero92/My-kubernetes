@@ -11,7 +11,7 @@ Add Line:
     provisioner: nfs.csi.k8s.io
     parameters:
       server: 192.168.210.252
-      share: /volume1/k8s-data
+      share: /share/nfs
     reclaimPolicy: Delete
     volumeBindingMode: Immediate
     mountOptions:
