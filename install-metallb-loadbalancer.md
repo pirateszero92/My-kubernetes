@@ -1,4 +1,4 @@
-# install-metallb
+# Install-metallb
 
 MetalLB can be deployed either with a simple Kubernetes manifest or with Helm. The rest of this example assumes MetalLB was deployed following the Installation instructions, and that the Ingress-Nginx Controller was installed using the steps described in the quickstart section of the installation guide.
 
