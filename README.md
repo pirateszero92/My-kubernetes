@@ -156,6 +156,11 @@ MetalLB can be deployed either with a simple Kubernetes manifest or with Helm. T
 
 MetalLB requires a pool of IP addresses in order to be able to take ownership of the ingress-nginx Service. This pool can be defined through IPAddressPool objects in the same namespace as the MetalLB controller. This pool of IPs must be dedicated to MetalLB's use, you can't reuse the Kubernetes node IPs or IPs handed out by a DHCP server.
 
+Installation By Manifest
+
+	kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.14.5/config/manifests/metallb-native.yaml
+
+ 
 Create metallb-loadbalancer.yaml
 
 	apiVersion: metallb.io/v1beta1
