@@ -76,7 +76,8 @@
     EOF
 
 #Apply sysctl params without reboot
-    sudo sysctl --system
+
+	sudo sysctl --system
 
 # Step 5: Install kubelet, kubeadm, and kubectl on each node
     sudo apt-get update
