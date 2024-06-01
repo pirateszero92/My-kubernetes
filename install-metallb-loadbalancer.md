@@ -46,6 +46,8 @@ Example Output :
 	default-http-backend   ClusterIP     10.0.64.249    <none>         80/TCP
 	ingress-nginx          LoadBalancer  10.0.220.217   192.168.210.1  80:30100/TCP,443:30101/TCP
 
-#ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
+ref: https://metallb.universe.tf/installation/
+
+ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
 
 Page : Bare-metal considerations
