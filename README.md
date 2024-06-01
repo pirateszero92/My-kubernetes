@@ -135,7 +135,7 @@ You can fetch that script, and then execute it locally. It's well documented so 
 
 	./get_helm.sh
 
-#ref: https://helm.sh/docs/intro/install/
+ref: https://helm.sh/docs/intro/install/
    
 # 2. install-ingress
 
@@ -148,7 +148,7 @@ This section is applicable to Kubernetes clusters deployed on bare metal servers
 #Checking ingress controller version Run /nginx-ingress-controller --version within the pod, for instance with kubectl exec:
 
 
-#ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
+ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
 
 # 3. install-metallb
 
@@ -196,7 +196,9 @@ Check service
 	default-http-backend   ClusterIP     10.0.64.249    <none>         80/TCP
 	ingress-nginx          LoadBalancer  10.0.220.217   192.168.210.1  80:30100/TCP,443:30101/TCP
 
-#ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
+ref: https://metallb.universe.tf/installation/
+
+ref: https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal-clusters
 
 Page : Bare-metal considerations
 
