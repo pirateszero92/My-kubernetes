@@ -6,9 +6,9 @@
     - K8s-Master-node 
     - K8s-Worker-node
     - NFS-server for Provisioner Persisten Volume
-    - docker server for nginx proxy manager, github, docker-registry and more
+    - docker server for nginx proxy manager, gitlab, docker-registry and more
         4 IP for server and 1-150 for External IP (Loadbalancer) 
-    Example: 
+    Example:
         192.168.210.250 k8s-master 
         192.168.210.251 k8s-n1 
         192.168.210.252 k8s-nfs
