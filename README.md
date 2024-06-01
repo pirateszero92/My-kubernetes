@@ -2,11 +2,11 @@
 
 ## Install Kubernetes Cluster Docker Engine on Unbuntu Server Step by Step.
 
-# 1. Prepare 3 Server and Network IP.
+# 1. Prepare 4 Server and Network IP.
     - K8s-Master-node 
     - K8s-Worker-node
     - NFS-server for Provisioner Persisten Volume
-    - docker server for nginx proxy manager and more
+    - docker server for nginx proxy manager, github, docker-registry and more
         4 IP for server and 1-150 for External IP (Loadbalancer) 
     Example: 
         192.168.210.250 k8s-master 
