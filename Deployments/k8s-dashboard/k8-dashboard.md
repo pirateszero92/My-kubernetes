@@ -11,6 +11,7 @@
 type: ClusterIP ---> type: LoadBalancer  wq!(save and exit)
 
 #check status
+
     kubectl get all -n kubernetes-dashboard
 
 ##Create token:
