@@ -222,7 +222,9 @@ Create a directory to be used for NFS:
 	sudo chown nobody:nogroup /share/nfs
 	sudo chown -R 999:999 /share/nfs
  
-####sudo chmod 0777 /share/nfs#### not work for mysql, mariada,datbase
+####sudo chown -R 999:999 /share/nfs##### work for mysql, postgresql
+
+####sudo chown nobody:nogroup /share/nfs#### not work for mysql, mariada,datbase
 
 Edit the /etc/exports file. Make sure that the IP addresses of all your MicroK8s nodes are able to mount this share. For example, to allow all IP addresses in the 192.168.210.0/24 subnet:
 
