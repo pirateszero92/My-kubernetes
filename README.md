@@ -220,7 +220,7 @@ Create a directory to be used for NFS:
 
 	sudo mkdir -p /share/nfs
 	sudo chown nobody:nogroup /share/nfs
-	sudo chown -R 999:999 /share/nfs
+	sudo chmod 0777 /share/nfs
  
 ####sudo chown -R 999:999 /share/nfs##### work for mysql, postgresql
 
