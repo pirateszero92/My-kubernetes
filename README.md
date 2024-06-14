@@ -25,7 +25,7 @@
     #This is the network config written by 'subiquity'
     network: 
       ethernets: 
-        eth0: 
+        eth0: #if interface not working change to ens32:
           addresses: 
           - 192.168.210.250/24 
           nameservers: 
