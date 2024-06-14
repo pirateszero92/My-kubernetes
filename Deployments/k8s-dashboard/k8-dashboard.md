@@ -1,10 +1,19 @@
-# Deploy dashboard:
+# In order to install Kubernetes Dashboard simply run:
+# Add kubernetes-dashboard repository
 
-    kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+    helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+    
+# Deploy a Helm Release named "kubernetes-dashboard" using the kubernetes-dashboard chart
+
+    helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard
+
+#kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml#--old version
 
 #Getting Access Dashboard
 
-    kubectl edit service/kubernetes-dashboard -n kubernetes-dashboard
+     kubectl edit service/kubernetes-dashboard-kong-proxy -n kubernetes-dashboard   
+    
+#kubectl edit service/kubernetes-dashboard -n kubernetes-dashboard#--old version
 
 #Change the Line
 
@@ -52,3 +61,6 @@ Remove the admin ServiceAccount and ClusterRoleBinding.
 
     kubectl -n kubernetes-dashboard delete serviceaccount admin
     kubectl -n kubernetes-dashboard delete clusterrolebinding admin
+
+
+#ref : https://github.com/kubernetes/dashboard/tree/master
