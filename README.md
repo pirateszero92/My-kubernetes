@@ -89,7 +89,7 @@
     sudo apt install kubeadm kubelet kubectl
     sudo apt-mark hold kubelet kubeadm kubectl
 
-# Step 6: Install Docker
+# Step 6: Install Containerd
     sudo apt install docker.io
     sudo mkdir /etc/containerd
     sudo sh -c "containerd config default > /etc/containerd/config.toml"
