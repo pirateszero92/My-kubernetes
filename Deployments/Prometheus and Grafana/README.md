@@ -23,7 +23,7 @@ Create : prom-ingress.yaml
     spec:
       ingressClassName: nginx
       rules:
-      - host: npm.tvdirect.tv
+      - host: npm.domain.local
         http:
           paths:
           - path: /
