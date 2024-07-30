@@ -1,17 +1,17 @@
-#Get this Helm chart
+Get this Helm chart
 
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
     helm repo update
 
-#Install Prometheus Helm Chart on Kubernetes Cluster  
+Install Prometheus Helm Chart on Kubernetes Cluster  
 
     helm install kube-prom-stack prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
 
-#Get the password for the admin user of the Grafana dashboard
+Get the password for the admin user of the Grafana dashboard
 
     kubectl get secret --namespace monitoring kube-prom-stack-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
 
-#Create : prom-ingress.yaml
+Create : prom-ingress.yaml
 
     apiVersion: networking.k8s.io/v1
     kind: Ingress
@@ -33,3 +33,7 @@
                 name: kube-prom-stack-grafana
                 port:
                   number: 80
+
+Apply config:
+
+        kubectl apply -f prom-ingress.yaml
