@@ -36,4 +36,4 @@ Create : prom-ingress.yaml
 
 Apply config:
 
-        kubectl apply -f prom-ingress.yaml
+    kubectl apply -f prom-ingress.yaml
