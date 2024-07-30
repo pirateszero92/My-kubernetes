@@ -6,6 +6,13 @@ Edit file components.yaml
 
 add to line -->   - --kubelet-insecure-tls
 
+spec:
+ containers:
+ - args:
+   - --cert-dir=/tmp
+   - --secure-port=10250
+   - --kubelet-insecure-tls
+
 save and then run 
 
     kubectl apply -f components.yaml
