@@ -8,7 +8,7 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-  - host: npm.tvdirect.tv
+  - host: npm.local.tv
     http:
       paths:
       - path: /
