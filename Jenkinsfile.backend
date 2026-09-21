@@ -1,0 +1,105 @@
+pipeline {
+    agent any
+    
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+        registry = "https://nexus.superpart.co.th"
+        VERSION = "${env.BUILD_ID}"
+        NAME = "tms-backend-prod"
+        MINOR = "1.0"
+        IMAGE = "nexus.superpart.co.th/spp/backend/tms-prod"
+        K8S_DEPLOY_HOST = "10.1.1.152"
+        REMOTE_K8S_DIR = "/home/vm01/spp-k8s/spp-tms-prod"
+    }
+	
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://developer:Cloudy$Day73!Orange@gitlab.superpart.co.th/tech/tms/backend/api-tms.git'
+            }
+        }
+        
+        stage('Build & Tag Docker Image') {
+            steps {
+                script {
+                    withCredentials([
+                        file(credentialsId: 'spp-private-key', variable: 'SPP_PRIVATE_KEY'),
+                        file(credentialsId: 'spp-public-key', variable: 'SPP_PUBLIC_KEY')
+                    ]) {
+                        sh 'rm -rf src/main/resources/certs'
+                        sh 'mkdir -p src/main/resources/certs'
+                        sh 'cp $SPP_PRIVATE_KEY src/main/resources/certs/private_key.pem'
+                        sh 'cp $SPP_PUBLIC_KEY src/main/resources/certs/public_key.pem'
+        
+                        withDockerRegistry(credentialsId: 'nexus-cred', url: env.registry) {
+                            sh "docker build -t ${IMAGE}:${MINOR}.${VERSION} ."
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Docker Image Scan') {
+            steps {
+                sh "trivy image --format table -o trivy-image-${VERSION}.html ${IMAGE}:${MINOR}.${VERSION}"
+            }
+        }
+        
+        stage('Docker Push Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'nexus-cred', url: env.registry) {
+                        sh "docker push ${IMAGE}:${MINOR}.${VERSION}"
+                    }
+                }
+            }
+        }
+        
+        stage('Docker delete Image') {
+            steps {
+                script {
+                    sh "docker rmi -f ${IMAGE}:${MINOR}.${VERSION}"
+                }
+            }
+        }
+        
+        stage('Get Approval') {
+            options {
+                timeout(time: 30, unit: 'MINUTES')
+            }
+            steps {
+                input "Please approve to proceed with deployment"
+            }
+        }
+        
+        stage('Deploy Backend to Kubernetes') {
+            steps {
+                script {
+                    def deployScript = """
+                        # 1. สร้างโฟลเดอร์ปลายทางบน 10.1.1.152
+                        ssh vm01@${K8S_DEPLOY_HOST} "mkdir -p ${REMOTE_K8S_DIR}"
+
+                        # 2. คัดลอก Manifests ทั้งหมดไปวางไว้ที่ 10.1.1.152
+                        scp -r k8s/* vm01@${K8S_DEPLOY_HOST}:${REMOTE_K8S_DIR}/
+
+                        # 3. อัปเดต Image Tag ใน deployment.yaml และสั่ง kubectl apply
+                        ssh vm01@${K8S_DEPLOY_HOST} << EOF
+                        cd ${REMOTE_K8S_DIR}
+                        
+                        # เปลี่ยน Tag ใน deployment.yaml เป็น ${IMAGE}:${MINOR}.${VERSION}
+                        sed -i 's|image: ${IMAGE}:.*|image: ${IMAGE}:${MINOR}.${VERSION}|g' deployment.yaml
+                        
+                        # สั่ง Deploy เข้า Kubernetes Cluster
+                        kubectl apply -f .
+                        
+                        # รอตรวจสอบการ Rollout จนสำเร็จ
+                        kubectl rollout status deployment/${NAME} -n default --timeout=120s
+                        exit
+EOF
+                    """
+                    sh deployScript
+                }
+            }
+        }
+    }        
+}

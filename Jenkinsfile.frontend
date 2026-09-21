@@ -1,0 +1,140 @@
+pipeline {
+    agent any
+    
+    tools {
+        nodejs 'node18'
+    }
+    
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+        registry = "https://nexus.superpart.co.th"
+        VERSION = "${env.BUILD_ID}"
+        MINOR = "1.0"
+        IMAGE = "nexus.superpart.co.th/spp/frontend/tms-prod"
+        NAME = "tms-frontend-prod"
+        K8S_DEPLOY_HOST = "10.1.1.152"
+        REMOTE_K8S_DIR = "/home/vm01/spp-k8s/spp-tms-frontend"
+    }
+	
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://developer:Cloudy$Day73!Orange@gitlab.superpart.co.th/tech/tms/frontend.git'
+            }
+        }
+        
+        stage('Remove Old & Create New .env') {
+            steps {
+                sh '''
+                    rm -f .env
+                    
+                    echo 'VITE_API_URL="https://tms-api.superpart.co.th/"' >> .env
+                    echo 'VITE_API_MAIN_URL="https://api.superpart.co.th"' >> .env
+                    echo 'VITE_DOWNLOAD_URL="https://download.superpart.co.th/download"' >> .env
+                    echo 'VITE_DIRECT_PRINT_BRIDGE_URL="https://192.168.22.204:3000/direct-print"' >> .env
+                    echo 'VITE_APP_VERSION="1.0"' >> .env
+                    echo 'VITE_CRYPTO_KEY="SuPeRP@Rt#Tha1L@nD"' >> .env
+                    echo 'VITE_FIREBASE_API_KEY="AIzaSyCxmjwyu8Emcjo8aYidcXT9SMVym_PvwUs"' >> .env
+                    echo 'VITE_FIREBASE_AUTH_DOMAIN="tms-system-83dd2.firebaseapp.com"' >> .env
+                    echo 'VITE_FIREBASE_PROJECT_ID="tms-system-83dd2"' >> .env
+                    echo 'VITE_FIREBASE_STORAGE_BUCKET="tms-system-83dd2.firebasestorage.app"' >> .env
+                    echo 'VITE_FIREBASE_MESSAGING_SENDER_ID="1042144995811"' >> .env
+                    echo 'VITE_FIREBASE_APP_ID="1:1042144995811:web:dd4529c41f65fc6ef658d6"' >> .env
+                    echo 'VITE_FIREBASE_MEASUREMENT_ID="G-793W86LN92"' >> .env
+                    echo 'VITE_FIREBASE_VAPID_KEY="BJvCgubFlbz4W6_RqjYN5Dy14D-7Nhopt8vyfxSaLPl_MqAv_EjKXzfaA7I1tDLAVh3vvxxu6CoLNaOlPofmCk0"' >> .env
+                '''
+            }
+        }
+        
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonar') {
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=${NAME}-${VERSION} -Dsonar.projectKey=${NAME}-${VERSION} \
+                            -Dsonar.sources=. \
+							-Dsonar.css.node=. '''
+                }
+            }
+        }
+        
+        stage('Quality Gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+        
+        stage('Build & Tag Docker Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'nexus-cred', url: env.registry) {
+                        sh "docker build -f prod.Dockerfile -t ${IMAGE}:${MINOR}.${VERSION} ."
+                    }
+                }
+            }
+        }
+        
+        stage('Docker Image Scan') {
+            steps {
+                sh "trivy image --format table -o trivy-image-${NAME}-report-${VERSION}.html ${IMAGE}:${MINOR}.${VERSION}"
+            }
+        }
+        
+        stage('Docker Push Image') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'nexus-cred', url: env.registry) {
+                        sh "docker push ${IMAGE}:${MINOR}.${VERSION}"
+                    }
+                }
+            }
+        }
+        
+        stage('Docker delete Image') {
+            steps {
+                script {
+                    sh "docker rmi -f ${IMAGE}:${MINOR}.${VERSION}"
+                }
+            }
+        }
+        
+        stage('Get Approval') {
+            options {
+                timeout(time: 30, unit: 'MINUTES')
+            }
+            steps {
+                input "Please approve to proceed with deployment"
+            }
+        }
+        
+        stage('Deploy Frontend to Kubernetes') {
+            steps {
+                script {
+                    def deployScript = """
+                        # 1. สร้างโฟลเดอร์ปลายทางบน 10.1.1.152
+                        ssh vm01@${K8S_DEPLOY_HOST} "mkdir -p ${REMOTE_K8S_DIR}"
+
+                        # 2. คัดลอก Manifests ทั้งหมดไปวางไว้ที่ 10.1.1.152
+                        scp -r k8s/* vm01@${K8S_DEPLOY_HOST}:${REMOTE_K8S_DIR}/
+
+                        # 3. อัปเดต Image Tag ใน deployment.yaml และสั่ง kubectl apply
+                        ssh vm01@${K8S_DEPLOY_HOST} << EOF
+                        cd ${REMOTE_K8S_DIR}
+                        
+                        # เปลี่ยน Tag ใน deployment.yaml เป็น ${IMAGE}:${MINOR}.${VERSION}
+                        sed -i 's|image: ${IMAGE}:.*|image: ${IMAGE}:${MINOR}.${VERSION}|g' deployment.yaml
+                        
+                        # สั่ง Deploy เข้า Kubernetes Cluster
+                        kubectl apply -f .
+                        
+                        # รอตรวจสอบการ Rollout จนสำเร็จ
+                        kubectl rollout status deployment/${NAME} -n default --timeout=120s
+                        exit
+EOF
+                    """
+                    sh deployScript
+                }
+            }
+        }
+    }        
+}
