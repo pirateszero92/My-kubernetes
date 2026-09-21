@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: tms-backend-pvc
-  namespace: tms-backend
+  namespace: tms-backend-prod
 spec:
   accessModes:
     - ReadWriteMany

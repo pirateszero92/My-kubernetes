@@ -6,11 +6,11 @@ pipeline {
         registry = "https://nexus.superpart.co.th"
         VERSION = "${env.BUILD_ID}"
         NAME = "tms-backend-prod"
-        NAMESPACE = "tms-backend"
+        NAMESPACE = "tms-backend-prod"
         MINOR = "1.0"
         IMAGE = "nexus.superpart.co.th/spp/backend/tms-prod"
         IP = "10.1.1.152"
-        REMOTE_DIR = "/home/vm01/spp-k8s/spp-tms-prod"
+        REMOTE_DIR = "/home/vm01/spp-k8s/spp-tms-backend"
     }
 	
     stages {
@@ -93,8 +93,8 @@ pipeline {
                         # สั่ง Deploy เข้า Kubernetes Cluster
                         kubectl apply -f .
                         
-                        # รอตรวจสอบการ Rollout จนสำเร็จ โดยระบุ namespace tms-backend เจาะจง
-                        kubectl rollout status deployment/tms-backend-prod -n tms-backend --timeout=120s
+                        # รอตรวจสอบการ Rollout จนสำเร็จ
+                        kubectl rollout status deployment/${NAME} -n ${NAMESPACE} --timeout=120s
                         exit
 EOF
                     """

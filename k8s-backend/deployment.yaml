@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tms-backend-prod
-  namespace: tms-backend
+  namespace: tms-backend-prod
   labels:
     app: tms-backend-prod
 spec:
