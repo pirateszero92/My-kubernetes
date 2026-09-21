@@ -15,24 +15,12 @@ spec:
       labels:
         app: tms-backend-prod
     spec:
-      securityContext:
-        runAsNonRoot: true
-        runAsUser: 1000
-        runAsGroup: 1000
-        fsGroup: 1000
-        seccompProfile:
-          type: RuntimeDefault
       imagePullSecrets:
         - name: nexus-regcred
       containers:
         - name: tms-backend
           image: nexus.superpart.co.th/spp/backend/tms-prod:latest
           imagePullPolicy: Always
-          securityContext:
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-                - ALL
           ports:
             - containerPort: 8080
               name: http
