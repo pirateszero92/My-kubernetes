@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>Docker Single-Server vs Kubernetes Cluster Migration Presentation</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    .slide { display: none; }
+    .slide.active { display: block; }
+
+    /* Custom CSS สำหรับการพิมพ์เป็น PDF ผ่าน Ctrl+P */
+    @media print {
+      body {
+        padding: 0 !important;
+        background: #ffffff !important;
+        color: #0f172a !important;
+      }
+      header, footer, button, nav {
+        display: none !important;
+      }
+      .slide {
+        display: block !important;
+        page-break-after: always !important;
+        break-after: page !important;
+        margin: 0 !important;
+        padding: 24px !important;
+        min-h-screen: 0 !important;
+      }
+      .bg-\[var\(--card\)\] {
+        background-color: #f8fafc !important;
+        border: 1px solid #e2e8f0 !important;
+        color: #0f172a !important;
+      }
+      .text-\[var\(--muted-foreground\)\] {
+        color: #475569 !important;
+      }
+      .border-\[var\(--border\)\] {
+        border-color: #cbd5e1 !important;
+      }
+    }
+  </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--foreground)] antialiased min-h-screen flex flex-col justify-between p-4 md:p-8">
+
+  <!-- TOP BAR / HEADER -->
+  <header class="flex items-center justify-between border-b border-[var(--border)] pb-4 mb-6">
+    <div class="flex items-center space-x-3">
+      <span class="px-3 py-1 bg-blue-600/20 text-blue-400 font-mono text-xs font-semibold rounded-full">TRANSFORMATION STRATEGY</span>
+      <h1 class="text-xl font-bold tracking-tight">Docker Single-Server ➔ Kubernetes Cluster Migration</h1>
+    </div>
+    <div class="flex items-center space-x-4">
+      <button onclick="window.print()" class="px-3 py-1 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 font-mono text-xs font-semibold rounded-lg border border-emerald-500/30 transition flex items-center space-x-1">
+        <span>🖨️ Export PDF (Ctrl+P)</span>
+      </button>
+      <div class="text-xs text-[var(--muted-foreground)] font-mono">
+        Slide <span id="current-slide-num" class="font-bold text-blue-400">1</span> / <span id="total-slides">9</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN SLIDE CONTENT CONTAINER -->
+  <main class="flex-1 flex flex-col justify-center max-w-6xl mx-auto w-full">
+
+    <!-- SLIDE 1: OVERVIEW -->
+    <div class="slide active space-y-6">
+      <div class="text-center space-y-2">
+        <h2 class="text-3xl font-extrabold text-blue-400">ภาพรวมการย้ายระบบ (Executive Overview)</h2>
+        <p class="text-[var(--muted-foreground)] max-w-2xl mx-auto text-sm">
+          การเปรียบเทียบเชิงยุทธศาสตร์ระหว่างระบบเดิม (Single Docker Host) กับระบบใหม่ (Talos K8s Cluster) ครอบคลุม 8 มิติสำคัญ
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+        <!-- OLD -->
+        <div class="bg-[var(--card)] border border-red-500/30 rounded-xl p-6 space-y-4">
+          <div class="flex items-center space-y-1 justify-between border-b border-red-500/20 pb-3">
+            <div>
+              <span class="text-xs font-mono uppercase text-red-400 font-semibold">Legacy Architecture</span>
+              <h3 class="text-lg font-bold">Single-Server Docker Host</h3>
+            </div>
+            <span class="text-2xl">🖥️</span>
+          </div>
+          <ul class="space-y-2 text-sm text-[var(--muted-foreground)]">
+            <li class="flex items-start">❌ <span class="ml-2">Single Point of Failure (SPOF) - เครื่องล่ม ระบบดับทั้งบริษัท</span></li>
+            <li class="flex items-start">❌ <span class="ml-2">Manual Scaling - ขยายเครื่องต้องปิดปรับปรุงระบบ (Downtime)</span></li>
+            <li class="flex items-start">❌ <span class="ml-2">Local Host Storage - ข้อมูลผูกติดดิสก์เครื่องเดียว ย้ายไม่ได้</span></li>
+            <li class="flex items-start">❌ <span class="ml-2">SSH Deployment Script - เสี่ยงต่อการสคริปต์หลุด พลาดแล้วย้อนยาก</span></li>
+          </ul>
+        </div>
+
+        <!-- NEW -->
+        <div class="bg-[var(--card)] border border-emerald-500/30 rounded-xl p-6 space-y-4">
+          <div class="flex items-center space-y-1 justify-between border-b border-emerald-500/20 pb-3">
+            <div>
+              <span class="text-xs font-mono uppercase text-emerald-400 font-semibold">Modern Architecture</span>
+              <h3 class="text-lg font-bold">7-Node Talos Kubernetes Cluster</h3>
+            </div>
+            <span class="text-2xl">☸️</span>
+          </div>
+          <ul class="space-y-2 text-sm text-[var(--muted-foreground)]">
+            <li class="flex items-start">✅ <span class="ml-2">High Availability (HA) - 3 Control Planes + 4 Worker Nodes</span></li>
+            <li class="flex items-start">✅ <span class="ml-2">Horizontal Auto-scaling (HPA) - ปรับ 2 ➔ 10 Replicas อัตโนมัติ</span></li>
+            <li class="flex items-start">✅ <span class="ml-2">Distributed Rook-Ceph Storage - Shared Volume ปลอดภัยสูง</span></li>
+            <li class="flex items-start">✅ <span class="ml-2">Zero-Downtime Deployment & 3-Second Instant Rollback</span></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: HIGH AVAILABILITY & SELF-HEALING -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 1</span>
+        <h2 class="text-2xl font-bold">ความทนทานและการซ่อมแซมตัวเอง (High Availability & Self-Healing)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-red-400 text-base">🔴 Docker Single-Server</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            พึ่งพาฮาร์ดแวร์และ OS ของเครื่องเดียว หาก OS แฮงก์, CPU Overheat, หรือเน็ตหลุด คอนเทนเนอร์ทั้งหมดจะหยุดทำงานทันที
+          </p>
+          <div class="bg-red-500/10 p-3 rounded-lg border border-red-500/20 text-xs font-mono text-red-300">
+            Downtime = เวลาที่ใช้ตามช่าง + บูตเครื่องใหม่ (15-60 นาที)
+          </div>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-emerald-400 text-base">🟢 Kubernetes Cluster</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            หาก Worker Node เครื่องใดเครื่องหนึ่งตาย Pods จะถูกย้ายไปรันต่อที่ Worker เครื่องอื่นทันที (Self-Healing) โดยผู้ใช้ไม่รู้สึกถึงความสะดุด
+          </p>
+          <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-xs font-mono text-emerald-300">
+            Self-Healing Event = Kubelet ตรวจพบ Node ตาย ➔ Reschedule ไปเครื่องอื่นอัตโนมัติ (&lt; 30 วินาที)
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: SCALABILITY -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 2</span>
+        <h2 class="text-2xl font-bold">การขยายระบบและการจัดการทรัพยากร (Scalability & Resource Management)</h2>
+      </div>
+
+      <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h4 class="font-bold text-red-400 mb-2 text-sm">Single Server Docker</h4>
+            <p class="text-xs text-[var(--muted-foreground)]">
+              - ขนาดจำกัดตาม Spec ฮาร์ดแวร์เครื่องเดียว<br>
+              - หากผู้ใช้พุ่งสูง (Peak Traffic) เครื่องจะ RAM เต็มและ Crash<br>
+              - ไม่มีการจำกัด Resource Limits ที่ชัดเจน อาจทำให้ตู้เดียวดึง RAM เครื่องจนค้าง
+            </p>
+          </div>
+          <div>
+            <h4 class="font-bold text-emerald-400 mb-2 text-sm">Kubernetes HPA (HorizontalPodAutoscaler)</h4>
+            <p class="text-xs text-[var(--muted-foreground)]">
+              - กำหนด Min: 2 Replicas / Max: 10 Replicas อัตโนมัติ<br>
+              - เมื่อ CPU > 75% หรือ RAM > 80% K8s จะสั่งปั๊ม Pods เพิ่มทันที<br>
+              - กระจายภาระงานไปยัง 4 Worker Nodes อย่างสมดุล
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: STORAGE -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 3</span>
+        <h2 class="text-2xl font-bold">ระบบจัดเก็บข้อมูล (Storage & Data Persistence)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-red-400 text-sm">🔴 Local Host Path (-v /home/jenkins/tms/...)</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            - ไฟล์ ApiLogs, Master, Permission ผูกติดกับดิสก์ของเครื่อง `10.1.1.5`<br>
+            - หากดิสก์เครื่องนั้นเสีย ข้อมูลสูญหายทั้งหมด (Loss of Data)<br>
+            - ไม่รองรับการรันหลายคอนเทนเนอร์พร้อมกัน (Lock Conflict)
+          </p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-emerald-400 text-sm">🟢 Rook-Ceph Distributed Storage (PVC)</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            - ข้อมูลถูกทำ Replicas กระจายดิสก์บน 4 Worker Nodes<br>
+            - ใช้ `ReadWriteMany` (CephFS) ให้ทุก Pods อ่าน/เขียนไฟล์ร่วมกันได้พร้อมกัน<br>
+            - หาก Node ใด Node หนึ่งดิสก์พัง ข้อมูลยังมีสำรองบน Node อื่นครบถ้วน
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: NETWORKING & INGRESS -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 4</span>
+        <h2 class="text-2xl font-bold">เครือข่ายและการจัดเส้นทาง Traffic (Networking & Ingress)</h2>
+      </div>
+
+      <div class="space-y-4">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl text-xs space-y-2">
+          <h4 class="font-bold text-blue-400 text-sm">สถาปัตยกรรมที่ลงตัว: Nginx Proxy Manager + NGINX Gateway Fabric</h4>
+          <p class="text-[var(--muted-foreground)]">
+            ใช้ **Nginx Proxy Manager (`10.1.1.150`)** ทำหน้าที่ดูแล SSL Certificate & Domain ภายนอก แล้วส่งต่อ HTTP Traffic เข้าหา **NGINX Gateway Fabric** ใน K8s เพื่อกระจายลง Pods
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+          <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl">
+            <span class="font-bold text-red-400">วิธีเดิม: Direct Port (-p 7020:8080)</span>
+            <p class="mt-2 text-[var(--muted-foreground)]">พอร์ตชนกันง่าย แยกรートตาม URI ลำบาก และต้องแก้ไข Nginx Proxy Manager ชี้เจาะจง IP เดียว</p>
+          </div>
+          <div class="bg-[var(--card)] border border-[var(--border)] p-4 rounded-xl">
+            <span class="font-bold text-emerald-400">วิธีใหม่: Service + HTTPRoute</span>
+            <p class="mt-2 text-[var(--muted-foreground)]">ทำ Load Balancing อัตโนมัติระหว่าง Pods 2-10 ตัว และรองรับ WebSocket, Path Routing อย่างสมบูรณ์</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: CI/CD & ROLLBACK -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 5</span>
+        <h2 class="text-2xl font-bold">การ Deploy และการถอยกลับ (CI/CD Deployment & Rollback)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-red-400 text-sm">🔴 Traditional SSH Docker Run</h3>
+          <ul class="text-xs text-[var(--muted-foreground)] space-y-2">
+            <li>• สั่ง `docker stop` และ `docker rm` ตู้เก่าก่อนรันตู้ใหม่ ➔ <b>มี Downtime ชัดเจน</b></li>
+            <li>• Rollback ช้า: ต้องแก้เลข Tag ใน Jenkinsfile แล้วกดรัน Pipeline ใหม่ (1-3 นาที)</li>
+          </ul>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-emerald-400 text-sm">🟢 Kubernetes Rolling Update & Rollback</h3>
+          <ul class="text-xs text-[var(--muted-foreground)] space-y-2">
+            <li>• Rolling Update: สั่งสร้าง Pod ใหม่ให้ Ready ก่อน แล้วค่อยปลด Pod เก่าออก ➔ <b>Zero Downtime</b></li>
+            <li>• <b>Instant Rollback (&lt; 3 วินาที):</b> เพียงรันคำสั่ง <code>kubectl rollout undo deployment/tms-backend-prod</code> สลับกลับทันที</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: SECURITY -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 6</span>
+        <h2 class="text-2xl font-bold">ความปลอดภัยและการจัดการความลับ (Security & Secret Management)</h2>
+      </div>
+
+      <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+          <div>
+            <h4 class="font-bold text-red-400 mb-2">🔴 Docker Host เดิม</h4>
+            <p class="text-[var(--muted-foreground)]">
+              - ไฟล์ Key/Cert (`private_key.pem`) ฝังไว้ในโฟลเดอร์เครื่อง หรือ Build เข้า Image<br>
+              - ใครมีสิทธิ์เข้าเครื่อง SSH `10.1.1.5` สามารถแอบดู Environment Variables และไฟล์ทั้งหมดได้<br>
+              - ไม่มีระบบสิทธิ์ระดับย่อย (RBAC)
+            </p>
+          </div>
+          <div>
+            <h4 class="font-bold text-emerald-400 mb-2">🟢 Kubernetes Security Model</h4>
+            <p class="text-[var(--muted-foreground)]">
+              - จัดเก็บความลับผ่าน **Kubernetes Secrets** ถอดรหัส memory-only ให้เฉพาะ Pod ที่ได้รับสิทธิ์<br>
+              - ดึง Image ผ่าน `imagePullSecrets` (`nexus-regcred`) อย่างปลอดภัย<br>
+              - ควบคุมสิทธิ์ด้วย **RBAC (Role-Based Access Control)** และ Network Policies
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: OBSERVABILITY -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Dimension 7</span>
+        <h2 class="text-2xl font-bold">การเฝ้าระวังและติดตามสถานะระบบ (Monitoring & Observability)</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-red-400 text-sm">🔴 Docker Manual Inspection</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            - ต้อง SSH เข้าเครื่องไปรัน `docker ps` หรือ `docker logs` ดูทีละตู้<br>
+            - ไม่มีระบบสถิติการใช้งาน CPU/RAM ย้อนหลัง<br>
+            - ไม่มีระบบแจ้งเตือนอัตโนมัติเมื่อ Container ค้างหรือ Crash
+          </p>
+        </div>
+
+        <div class="bg-[var(--card)] border border-[var(--border)] p-5 rounded-xl space-y-3">
+          <h3 class="font-bold text-emerald-400 text-sm">🟢 Kubernetes Observability Stack</h3>
+          <p class="text-xs text-[var(--muted-foreground)]">
+            - ตรวจสอบผ่าน **Headlamp Dashboard**, **Prometheus**, และ **Grafana** (มีรันอยู่ใน Cluster แล้ว)<br>
+            - **Metrics Server** ติดตามการใช้งาน CPU/RAM Real-time<br>
+            - Liveness & Readiness Probes ตรวจสุขภาพ Pods อัตโนมัติทุก 10-15 วินาที
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: SUMMARY MATRIX -->
+    <div class="slide space-y-6">
+      <div class="border-b border-[var(--border)] pb-3 text-center">
+        <span class="text-xs font-mono text-blue-400 uppercase font-semibold">Summary Matrix</span>
+        <h2 class="text-2xl font-bold">ตารางเปรียบเทียบสรุปทุกมิติ (Comparison Matrix)</h2>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left border border-[var(--border)] rounded-xl overflow-hidden">
+          <thead class="bg-[var(--card)] text-blue-400 uppercase font-mono">
+            <tr>
+              <th class="p-3 border-b border-[var(--border)]">มิติ (Dimension)</th>
+              <th class="p-3 border-b border-[var(--border)] text-red-400">Single-Server Docker</th>
+              <th class="p-3 border-b border-[var(--border)] text-emerald-400">Kubernetes Cluster (Talos)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[var(--border)] text-[var(--muted-foreground)]">
+            <tr>
+              <td class="p-3 font-semibold text-[var(--foreground)]">1. High Availability</td>
+              <td class="p-3 text-red-300">❌ มีจุดล้มเหลวเดี่ยว (SPOF)</td>
+              <td class="p-3 text-emerald-300">✅ HA 7 Nodes (3 CP + 4 Workers)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[var(--foreground)]">2. Auto-scaling</td>
+              <td class="p-3 text-red-300">❌ สเกลมือ (Manual Resize)</td>
+              <td class="p-3 text-emerald-300">✅ HPA อัตโนมัติ (2 - 10 Replicas)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[var(--foreground)]">3. Data Persistence</td>
+              <td class="p-3 text-red-300">❌ Local Disk เครื่องเดียว</td>
+              <td class="p-3 text-emerald-300">✅ Rook-Ceph Distributed Storage</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[var(--foreground)]">4. Deployment Downtime</td>
+              <td class="p-3 text-red-300">❌ มี Downtime ตอน Stop/Run</td>
+              <td class="p-3 text-emerald-300">✅ Zero Downtime (Rolling Update)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[var(--foreground)]">5. Rollback Speed</td>
+              <td class="p-3 text-red-300">❌ 1-3 นาที (Re-run Jenkins)</td>
+              <td class="p-3 text-emerald-300">✅ &lt; 3 วินาที (`kubectl rollout undo`)</td>
+            </tr>
+            <tr>
+              <td class="p-3 font-semibold text-[var(--foreground)]">6. Health Probes</td>
+              <td class="p-3 text-red-300">❌ Docker restart always พื้นฐาน</td>
+              <td class="p-3 text-emerald-300">✅ Liveness / Readiness Probes ชัดเจน</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- NAVIGATION FOOTER -->
+  <footer class="flex items-center justify-between border-t border-[var(--border)] pt-4 mt-6">
+    <button id="prev-btn" onclick="changeSlide(-1)" class="px-4 py-2 bg-[var(--card)] border border-[var(--border)] hover:bg-[var(--accent)] text-xs font-semibold rounded-lg transition disabled:opacity-50">
+      ◀ ถอยกลับ (Previous)
+    </button>
+    <div class="text-xs text-[var(--muted-foreground)]">
+      ใช้ปุ่มลูกศร ◀ ▶ หรือปุ่มกดเพื่อเปลี่ยนสไลด์
+    </div>
+    <button id="next-btn" onclick="changeSlide(1)" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-lg transition">
+      ถัดไป (Next) ▶
+    </button>
+  </footer>
+
+  <!-- SCRIPT FOR SLIDE NAVIGATION -->
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const totalSlides = slides.length;
+    document.getElementById('total-slides').innerText = totalSlides;
+
+    function showSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.toggle('active', i === index);
+      });
+      document.getElementById('current-slide-num').innerText = index + 1;
+      document.getElementById('prev-btn').disabled = index === 0;
+      
+      const nextBtn = document.getElementById('next-btn');
+      if (index === totalSlides - 1) {
+        nextBtn.innerText = 'สิ้นสุด (Finish)';
+        nextBtn.classList.remove('bg-blue-600', 'hover:bg-blue-500');
+        nextBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500');
+      } else {
+        nextBtn.innerText = 'ถัดไป (Next) ▶';
+        nextBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500');
+        nextBtn.classList.add('bg-blue-600', 'hover:bg-blue-500');
+      }
+    }
+
+    function changeSlide(direction) {
+      currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+      showSlide(currentSlide);
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        changeSlide(1);
+      } else if (e.key === 'ArrowLeft') {
+        changeSlide(-1);
+      }
+    });
+
+    showSlide(currentSlide);
+  </script>
+</body>
+</html>
