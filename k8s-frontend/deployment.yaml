@@ -15,6 +15,12 @@ spec:
       labels:
         app: tms-frontend-prod
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
       imagePullSecrets:
         - name: nexus-regcred
       containers:
@@ -26,8 +32,6 @@ spec:
             capabilities:
               drop:
                 - ALL
-            seccompProfile:
-              type: RuntimeDefault
           ports:
             - containerPort: 80
               name: http
