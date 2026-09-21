@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tms-frontend-prod
-  namespace: default
+  namespace: tms-frontend
   labels:
     app: tms-frontend-prod
 spec:

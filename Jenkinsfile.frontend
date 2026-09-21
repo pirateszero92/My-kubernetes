@@ -12,6 +12,7 @@ pipeline {
         MINOR = "1.0"
         IMAGE = "nexus.superpart.co.th/spp/frontend/tms-prod"
         NAME = "tms-frontend-prod"
+        NAMESPACE = "tms-frontend"
         K8S_DEPLOY_HOST = "10.1.1.152"
         REMOTE_K8S_DIR = "/home/vm01/spp-k8s/spp-tms-frontend"
     }
@@ -128,7 +129,7 @@ pipeline {
                         kubectl apply -f .
                         
                         # รอตรวจสอบการ Rollout จนสำเร็จ
-                        kubectl rollout status deployment/${NAME} -n default --timeout=120s
+                        kubectl rollout status deployment/${NAME} -n ${NAMESPACE} --timeout=120s
                         exit
 EOF
                     """

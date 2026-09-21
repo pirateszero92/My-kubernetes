@@ -6,6 +6,7 @@ pipeline {
         registry = "https://nexus.superpart.co.th"
         VERSION = "${env.BUILD_ID}"
         NAME = "tms-backend-prod"
+        NAMESPACE = "tms-backend"
         MINOR = "1.0"
         IMAGE = "nexus.superpart.co.th/spp/backend/tms-prod"
         K8S_DEPLOY_HOST = "10.1.1.152"
@@ -93,7 +94,7 @@ pipeline {
                         kubectl apply -f .
                         
                         # รอตรวจสอบการ Rollout จนสำเร็จ
-                        kubectl rollout status deployment/${NAME} -n default --timeout=120s
+                        kubectl rollout status deployment/${NAME} -n ${NAMESPACE} --timeout=120s
                         exit
 EOF
                     """
