@@ -16,4 +16,4 @@ spec:
             value: /api-tms
       backendRefs:
         - name: tms-backend-service
-          port: 8080
+          port: 80
