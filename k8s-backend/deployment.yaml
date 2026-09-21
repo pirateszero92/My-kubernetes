@@ -21,6 +21,13 @@ spec:
         - name: tms-backend
           image: nexus.superpart.co.th/spp/backend/tms-prod:latest
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           ports:
             - containerPort: 8080
               name: http

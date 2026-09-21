@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: tms-frontend-prod
-  namespace: tms-frontend
+  namespace: tms-frontend-prod
   labels:
     app: tms-frontend-prod
 spec:
@@ -21,6 +21,13 @@ spec:
         - name: tms-frontend
           image: nexus.superpart.co.th/spp/frontend/tms-prod:latest
           imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            seccompProfile:
+              type: RuntimeDefault
           ports:
             - containerPort: 80
               name: http
