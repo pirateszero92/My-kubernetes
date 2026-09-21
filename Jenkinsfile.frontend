@@ -128,8 +128,8 @@ pipeline {
                         # สั่ง Deploy เข้า Kubernetes Cluster
                         kubectl apply -f .
                         
-                        # รอตรวจสอบการ Rollout จนสำเร็จ
-                        kubectl rollout status deployment/${NAME} -n ${NAMESPACE} --timeout=120s
+                        # รอตรวจสอบการ Rollout จนสำเร็จ โดยระบุ namespace tms-frontend เจาะจง
+                        kubectl rollout status deployment/tms-frontend-prod -n tms-frontend --timeout=120s
                         exit
 EOF
                     """
