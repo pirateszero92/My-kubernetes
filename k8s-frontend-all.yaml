@@ -64,7 +64,34 @@ spec:
       targetPort: 80
       name: http
 ---
-# 3. HTTPRoute (NGINX Gateway Fabric)
+# 3. HorizontalPodAutoscaler (Min 2 - Max 10 Replicas)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tms-frontend-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tms-frontend-prod
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+# 4. HTTPRoute (NGINX Gateway Fabric)
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
