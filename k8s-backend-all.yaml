@@ -1,0 +1,155 @@
+# ==========================================
+# ⚙️ BACKEND TMS KUBERNETES MANIFESTS
+# ==========================================
+
+# 1. Secret (Nexus Docker Registry Credentials)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nexus-regcred
+  namespace: default
+type: kubernetes.io/dockerconfigjson
+data:
+  # ค่า Base64 จาก ~/.docker/config.json ที่ทำการ docker login nexus.superpart.co.th
+  .dockerconfigjson: eyJhdXRocyI6eyJodHRwczovL25leHVzLnN1cGVycGFydC5jby50aCI6eyJ1c2VybmFtZSI6ImRldmVsb3BlciIsInBhc3N3b3JkIjoiQ2xvdWR5JERheTczIU9yYW5nZSIsImF1dGgiOiJaR1YyWld4dmNHVnk6UTJ4dmRXUTVSREY1TnpNdEExSmhiaGNnIn19fQ==
+---
+# 2. PersistentVolumeClaim (Rook-Ceph Shared Storage)
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tms-backend-pvc
+  namespace: default
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: rook-ceph-cephfs
+  resources:
+    requests:
+      storage: 20Gi
+---
+# 3. Deployment (Spring Boot Backend)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tms-backend-prod
+  namespace: default
+  labels:
+    app: tms-backend-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tms-backend-prod
+  template:
+    metadata:
+      labels:
+        app: tms-backend-prod
+    spec:
+      imagePullSecrets:
+        - name: nexus-regcred
+      containers:
+        - name: tms-backend
+          image: nexus.superpart.co.th/spp/backend/tms-prod:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 45
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /app/ApiLogs
+              subPath: ApiLogs
+            - name: storage-volume
+              mountPath: /app/Master
+              subPath: Master
+            - name: storage-volume
+              mountPath: /app/Permission
+              subPath: Permission
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: tms-backend-pvc
+---
+# 4. Service (ClusterIP Port 8080)
+apiVersion: v1
+kind: Service
+metadata:
+  name: tms-backend-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: tms-backend-prod
+  ports:
+    - port: 8080
+      targetPort: 8080
+      name: http
+---
+# 5. HorizontalPodAutoscaler (Min 2 - Max 10 Replicas)
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tms-backend-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tms-backend-prod
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 75
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+---
+# 6. HTTPRoute (NGINX Gateway Fabric)
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tms-backend-route
+  namespace: default
+spec:
+  parentRefs:
+    - name: nginx-gateway
+      namespace: nginx-gateway
+  hostnames:
+    - "tms-api.superpart.co.th"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api-tms
+      backendRefs:
+        - name: tms-backend-service
+          port: 8080
