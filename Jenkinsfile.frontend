@@ -13,9 +13,8 @@ pipeline {
         IMAGE = "nexus.superpart.co.th/spp/frontend/tms-prod"
         NAME = "tms-frontend-prod"
         NAMESPACE = "tms-frontend"
-        K8S_DEPLOY_HOST = "10.1.1.152"
-        REMOTE_K8S_DIR = "/home/vm01/spp-k8s/spp-tms-frontend"
-        SSH_CREDENTIAL_ID = "vm01-ssh-key" // <-- กำหนด Credential ID สำหรับ SSH ใน Jenkins
+        IP = "10.1.1.152"
+        REMOTE_DIR = "/home/vm01/spp-k8s/spp-tms-frontend"
     }
 	
     stages {
@@ -112,31 +111,29 @@ pipeline {
         stage('Deploy Frontend to Kubernetes') {
             steps {
                 script {
-                    sshagent(credentials: [env.SSH_CREDENTIAL_ID]) {
-                        def deployScript = """
-                            # 1. สร้างโฟลเดอร์ปลายทางบน 10.1.1.152
-                            ssh -o StrictHostKeyChecking=no vm01@${K8S_DEPLOY_HOST} "mkdir -p ${REMOTE_K8S_DIR}"
+                    def deployScript = """
+                        # 1. สร้างโฟลเดอร์ปลายทางบน vm01 (10.1.1.152)
+                        ssh -o StrictHostKeyChecking=no vm01@${IP} "mkdir -p ${REMOTE_DIR}"
 
-                            # 2. คัดลอก Manifests ทั้งหมดไปวางไว้ที่ 10.1.1.152
-                            scp -o StrictHostKeyChecking=no -r k8s/* vm01@${K8S_DEPLOY_HOST}:${REMOTE_K8S_DIR}/
+                        # 2. คัดลอก Manifests ทั้งหมดในโฟลเดอร์ k8s/ ไปวางไว้บน vm01
+                        scp -o StrictHostKeyChecking=no -r k8s/* vm01@${IP}:${REMOTE_DIR}/
 
-                            # 3. อัปเดต Image Tag ใน deployment.yaml และสั่ง kubectl apply
-                            ssh -o StrictHostKeyChecking=no vm01@${K8S_DEPLOY_HOST} << EOF
-                            cd ${REMOTE_K8S_DIR}
-                            
-                            # เปลี่ยน Tag ใน deployment.yaml เป็น ${IMAGE}:${MINOR}.${VERSION}
-                            sed -i 's|image: ${IMAGE}:.*|image: ${IMAGE}:${MINOR}.${VERSION}|g' deployment.yaml
-                            
-                            # สั่ง Deploy เข้า Kubernetes Cluster
-                            kubectl apply -f .
-                            
-                            # รอตรวจสอบการ Rollout จนสำเร็จ
-                            kubectl rollout status deployment/${NAME} -n ${NAMESPACE} --timeout=120s
-                            exit
+                        # 3. อัปเดต Image Tag ใน deployment.yaml และสั่ง kubectl apply
+                        ssh -o StrictHostKeyChecking=no vm01@${IP} << EOF
+                        cd ${REMOTE_DIR}
+                        
+                        # เปลี่ยน Tag ใน deployment.yaml เป็น ${IMAGE}:${MINOR}.${VERSION}
+                        sed -i 's|image: ${IMAGE}:.*|image: ${IMAGE}:${MINOR}.${VERSION}|g' deployment.yaml
+                        
+                        # สั่ง Deploy เข้า Kubernetes Cluster
+                        kubectl apply -f .
+                        
+                        # รอตรวจสอบการ Rollout จนสำเร็จ
+                        kubectl rollout status deployment/${NAME} -n ${NAMESPACE} --timeout=120s
+                        exit
 EOF
-                        """
-                        sh deployScript
-                    }
+                    """
+                    sh deployScript
                 }
             }
         }
