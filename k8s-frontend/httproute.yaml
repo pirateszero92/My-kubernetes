@@ -1,0 +1,19 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: tms-frontend-route
+  namespace: default
+spec:
+  parentRefs:
+    - name: nginx-gateway
+      namespace: nginx-gateway
+  hostnames:
+    - "tms.superpart.co.th"
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: tms-frontend-service
+          port: 80

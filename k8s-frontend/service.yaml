@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tms-frontend-service
+  namespace: default
+spec:
+  type: ClusterIP
+  selector:
+    app: tms-frontend-prod
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http

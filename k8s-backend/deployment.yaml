@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tms-backend-prod
+  namespace: default
+  labels:
+    app: tms-backend-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tms-backend-prod
+  template:
+    metadata:
+      labels:
+        app: tms-backend-prod
+    spec:
+      imagePullSecrets:
+        - name: nexus-regcred
+      containers:
+        - name: tms-backend
+          image: nexus.superpart.co.th/spp/backend/tms-prod:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1024Mi"
+              cpu: "1000m"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 45
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /app/ApiLogs
+              subPath: ApiLogs
+            - name: storage-volume
+              mountPath: /app/Master
+              subPath: Master
+            - name: storage-volume
+              mountPath: /app/Permission
+              subPath: Permission
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: tms-backend-pvc
