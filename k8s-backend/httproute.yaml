@@ -10,10 +10,20 @@ spec:
   hostnames:
     - "tms-api.superpart.co.th"
   rules:
+    # 1. API Backend (Spring Boot)
     - matches:
         - path:
             type: PathPrefix
             value: /api-tms
       backendRefs:
         - name: tms-backend-service
+          port: 80
+
+    # 2. Master JSON Files (Nginx)
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /ms-tms
+      backendRefs:
+        - name: tms-master-service
           port: 80

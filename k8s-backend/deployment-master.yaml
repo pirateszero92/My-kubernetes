@@ -1,0 +1,55 @@
+# ==========================================
+# 📦 TMS MASTER (JSON Static Files Service)
+# ==========================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tms-master-prod
+  namespace: tms-backend-prod
+  labels:
+    app: tms-master-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: tms-master-prod
+  template:
+    metadata:
+      labels:
+        app: tms-master-prod
+    spec:
+      containers:
+        - name: tms-master
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "250m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: storage-volume
+              mountPath: /usr/share/nginx/html
+              subPath: Master
+      volumes:
+        - name: storage-volume
+          persistentVolumeClaim:
+            claimName: tms-backend-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tms-master-service
+  namespace: tms-backend-prod
+spec:
+  type: ClusterIP
+  selector:
+    app: tms-master-prod
+  ports:
+    - port: 80
+      targetPort: 80
+      name: http
