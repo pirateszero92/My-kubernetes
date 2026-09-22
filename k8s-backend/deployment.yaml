@@ -15,8 +15,6 @@ spec:
       labels:
         app: tms-backend-prod
     spec:
-      imagePullSecrets:
-        - name: nexus-regcred
       containers:
         - name: tms-backend
           image: nexus.superpart.co.th/spp/backend/tms-prod:latest
