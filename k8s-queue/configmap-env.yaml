@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tms-queue-config
+  namespace: tms-queue-prod
+data:
+  REDIS_HOST: "spp-prod-tms-redis"
+  REDIS_PORT: "6379"
+  PORT: "3000"
+  SPP_INTERFACE: "https://api.superpart.co.th"
+  POSTGRES_URL_WMS: ""
+  POSTGRES_URL_TMS: "postgres://postgres:Superpart%23007@10.1.1.24:6432/tms"
+  SCHEMA: "public"
+  INTERFACE_TOKEN: "461d714a4deb02302bca3bad951ae3e133b126e6b697f638383eea96bfe31ba2"
+  ENABLE_WMS: "false"
+  ENABLE_TMS: "true"
+  ERP_TOKEN: "826dd354fb5d592:324ecde6d202ef8"
+  ERP_INTERFACE: "https://erp.superpart.co.th"
+  ADMIN_USER: "spp"

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spp-tms-queue-app-prod
+  namespace: tms-queue-prod
+  labels:
+    app: spp-tms-queue-app-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: spp-tms-queue-app-prod
+  template:
+    metadata:
+      labels:
+        app: spp-tms-queue-app-prod
+    spec:
+      containers:
+        - name: queue-app
+          image: nexus.superpart.co.th/spp/backend/spp-tms-queue-app-prod:latest
+          imagePullPolicy: Always
+          command: ["npm", "run", "start"]
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: tms-queue-config
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            tcpSocket:
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spp-tms-queue-app-service
+  namespace: tms-queue-prod
+spec:
+  type: ClusterIP
+  selector:
+    app: spp-tms-queue-app-prod
+  ports:
+    - port: 80
+      targetPort: 3000
+      name: http

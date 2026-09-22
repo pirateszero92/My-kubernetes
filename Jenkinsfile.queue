@@ -1,0 +1,160 @@
+pipeline {
+    agent any
+
+    environment {
+        // --- Common Configuration ---
+        SCANNER_HOME = tool 'sonar-scanner'
+        REGISTRY_URL = "https://nexus.superpart.co.th"
+        VERSION = "${env.BUILD_ID}"
+        MINOR = "1.0"
+        
+        // Remote K8s Deployment Host & Directory
+        K8S_DEPLOY_HOST = "10.1.1.152"
+        REMOTE_K8S_DIR = "/home/vm01/spp-k8s/spp-tms-queue"
+        NAMESPACE = "tms-queue-prod"
+        
+        // --- Service 1: APP Config ---
+        APP_NAME = "spp-tms-queue-app-prod"
+        APP_IMAGE = "nexus.superpart.co.th/spp/backend/spp-tms-queue-app-prod"
+        
+        // --- Service 2: WORKER Config ---
+        WORKER_NAME = "spp-tms-queue-worker-prod"
+        WORKER_IMAGE = "nexus.superpart.co.th/spp/backend/spp-tms-queue-worker-prod"
+    }
+
+    stages {
+        // STAGE 1: PREPARATION & ANALYSIS
+        stage('Initialize & Analysis') {
+            steps {
+                script {
+                    stage('Git Checkout') {
+                        git branch: 'main', url: 'https://developer:Cloudy$Day73!Orange@gitlab.superpart.co.th/tech/coreservice/logistics-queue-service.git'
+                    }
+
+                    stage('Create Local .env') {
+                        sh 'rm -f .env || true'
+                        sh '''
+                            if [ ! -f .env ]; then
+                                echo "REDIS_HOST=spp-prod-tms-redis" >> .env
+                                echo "REDIS_PORT=6379" >> .env
+                                echo "PORT=3000" >> .env
+                                echo "REDIS_PASSWORD=Superpartdev" >> .env
+                                echo "SPP_INTERFACE=https://api.superpart.co.th" >> .env
+                                echo "POSTGRES_URL_WMS=" >> .env
+                                echo "POSTGRES_URL_TMS=postgres://postgres:Superpart%23007@10.1.1.24:6432/tms" >> .env
+                                echo "SCHEMA=public" >> .env
+                                echo "INTERFACE_TOKEN=461d714a4deb02302bca3bad951ae3e133b126e6b697f638383eea96bfe31ba2" >> .env
+                                echo "ENABLE_WMS=false" >> .env
+                                echo "ENABLE_TMS=true" >> .env
+                                echo "ERP_TOKEN=826dd354fb5d592:324ecde6d202ef8" >> .env
+                                echo "ERP_INTERFACE=https://erp.superpart.co.th" >> .env
+                                echo "ADMIN_USER=spp" >> .env
+                                echo "ADMIN_PASS=superpart@1234" >> .env
+                            fi
+                        '''
+                    }
+                    
+                    stage('File System Scan') {
+                        sh "trivy fs --format table -o trivy-report-${VERSION}.html . || true"
+                    }
+
+                    stage('SonarQube Analysis') {
+                        withSonarQubeEnv('sonar') {
+                            sh """
+                                ${SCANNER_HOME}/bin/sonar-scanner \
+                                -Dsonar.projectName=TMS-Queue-Service-${VERSION} \
+                                -Dsonar.projectKey=TMS-Queue-Service-${VERSION} \
+                                -Dsonar.sources=. \
+                                -Dsonar.css.node=.
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+            }
+        }
+
+        // STAGE 2: BUILD DOCKER IMAGES (APP & WORKER IN PARALLEL)
+        stage('Build & Push Docker Images') {
+            parallel {
+                // === BRANCH 1: APP ===
+                stage('APP: Build & Push') {
+                    steps {
+                        script {
+                            def appImageTag = "${APP_IMAGE}:${MINOR}.${VERSION}"
+                            withDockerRegistry(credentialsId: 'nexus-cred', url: env.REGISTRY_URL) {
+                                sh "docker build -f app.Dockerfile -t ${appImageTag} ."
+                                sh "docker push ${appImageTag}"
+                            }
+                            sh "docker rmi -f ${appImageTag}"
+                        }
+                    }
+                }
+
+                // === BRANCH 2: WORKER ===
+                stage('WORKER: Build & Push') {
+                    steps {
+                        script {
+                            def workerImageTag = "${WORKER_IMAGE}:${MINOR}.${VERSION}"
+                            withDockerRegistry(credentialsId: 'nexus-cred', url: env.REGISTRY_URL) {
+                                sh "docker build -f worker.Dockerfile -t ${workerImageTag} ."
+                                sh "docker push ${workerImageTag}"
+                            }
+                            sh "docker rmi -f ${workerImageTag}"
+                        }
+                    }
+                }
+            }
+        }
+
+        // STAGE 3: DEPLOY TO KUBERNETES VIA SSH (10.1.1.152)
+        stage('Deploy Queue Services to Kubernetes') {
+            steps {
+                script {
+                    def deployScript = """
+                        # 1. สร้างโฟลเดอร์ปลายทางบน 10.1.1.152
+                        ssh -o StrictHostKeyChecking=no vm01@${K8S_DEPLOY_HOST} "mkdir -p ${REMOTE_K8S_DIR}"
+
+                        # 2. คัดลอก K8s Manifests ทั้งหมดใน k8s/ ไปวางไว้บน 10.1.1.152
+                        scp -o StrictHostKeyChecking=no -r k8s/* vm01@${K8S_DEPLOY_HOST}:${REMOTE_K8S_DIR}/
+
+                        # 3. สั่ง Update Image Tags และสั่ง kubectl apply
+                        ssh -o StrictHostKeyChecking=no vm01@${K8S_DEPLOY_HOST} << EOF
+                        cd ${REMOTE_K8S_DIR}
+                        
+                        # อัปเดต Tag ของ APP และ WORKER
+                        sed -i 's|image: ${APP_IMAGE}:.*|image: ${APP_IMAGE}:${MINOR}.${VERSION}|g' deployment-app.yaml
+                        sed -i 's|image: ${WORKER_IMAGE}:.*|image: ${WORKER_IMAGE}:${MINOR}.${VERSION}|g' deployment-worker.yaml
+                        
+                        # สั่ง Deploy เข้า Kubernetes Cluster
+                        kubectl apply -f .
+                        
+                        # ตรวจสอบการ Rollout ของทั้ง 2 Deployments
+                        kubectl rollout status deployment/${APP_NAME} -n ${NAMESPACE} --timeout=120s
+                        kubectl rollout status deployment/${WORKER_NAME} -n ${NAMESPACE} --timeout=120s
+                        exit
+EOF
+                    """
+                    sh deployScript
+                }
+            }
+        }
+
+        stage('System Prune') {
+            steps {
+                 sh "docker builder prune -a -f"
+            }
+        }
+    }
+
+    post {
+        always {
+            echo '✅ Logistics Queue Service Kubernetes Deployment Pipeline Complete.'
+        }
+    }
+}
